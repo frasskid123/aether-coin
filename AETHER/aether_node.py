@@ -86,12 +86,29 @@ class Wallet:
         print("Address:", self.address)
         print("(Keep your private key safe!)")
 
+    def get_balance(self, chain):
+        balance = 0
+        for block in chain.chain:
+            try:
+                tx_list = json.loads(block.transactions)
+                for tx in tx_list:
+                    if isinstance(tx, str) and self.address in tx:
+                        balance += 50
+            except:
+                pass
+        return balance
+
 if __name__ == "__main__":
     print("🚀 AETHER Node Starting...\n")
     chain = AetherChain()
     wallet = Wallet()
-    print("\nMining your next personal block...\n")
+
+    balance = wallet.get_balance(chain)
+    print(f"\n💰 Your current balance: **{balance} AETHER**\n")
+
+    print("Mining your next personal block...\n")
     chain.pending_transactions.append("Reward to " + wallet.address + ": 50 AETHER")
     chain.mine()
+
     print("\n✅ Success! Your chain is saved permanently.")
     input("\nPress ENTER to close this window...")

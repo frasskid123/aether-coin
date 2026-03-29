@@ -11,21 +11,15 @@
     .coin { width: 260px; margin-bottom: 30px; }
     h1 { font-size: 4.5rem; margin: 0; letter-spacing: -3px; }
     .tagline { font-size: 1.6rem; margin: 20px 0 40px; opacity: 0.9; }
-    .btn { 
-      background: #00f0ff; 
-      color: #000; 
-      padding: 18px 50px; 
-      font-size: 1.3rem; 
-      font-weight: 700; 
-      border-radius: 50px; 
-      text-decoration: none; 
-      display: inline-block; 
-      margin: 12px; 
-    }
+    .btn { background: #00f0ff; color: #000; padding: 18px 50px; font-size: 1.3rem; font-weight: 700; border-radius: 50px; text-decoration: none; display: inline-block; margin: 12px; }
     section { padding: 80px 40px; max-width: 1100px; margin: 0 auto; }
     .section-title { font-size: 2.5rem; text-align: center; margin-bottom: 40px; }
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+    .card { background: #111; padding: 30px; border-radius: 20px; text-align: center; }
+    #qrcode { margin: 30px auto; padding: 20px; background: white; border-radius: 20px; display: inline-block; }
     footer { background: #000; padding: 60px 40px; text-align: center; font-size: 0.95rem; opacity: 0.7; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -45,24 +39,26 @@
 
     <h1>AETHER</h1>
     <p class="tagline">A Peer-to-Peer Electronic Cash System (2026 Edition)</p>
-    
-    <p style="margin:30px 0 10px; font-size:1.2rem;">Download the Miner</p>
-    
-    <button onclick="downloadMiner()" class="btn">⬇️ Download Miner (aether_node.py)</button>
-    <button onclick="downloadLauncher()" class="btn" style="background:#222;color:#fff;">⬇️ Download Easy Launcher (run_aether.bat)</button>
-    
-    <p style="margin-top:20px; font-size:1rem; opacity:0.8;">
-      Download both files → put them in the same folder → double-click run_aether.bat
-    </p>
+    <a href="aether_node.py" download class="btn">⬇️ Download Miner Now</a>
   </div>
 
-  <section>
-    <h2 class="section-title">How to Start Mining</h2>
+  <!-- BUY SECTION WITH QR CODE -->
+  <section style="background:#111;">
+    <h2 class="section-title">Buy AETHER Right Now</h2>
     <div class="features">
-      <div class="card"><h3>1. Download the files</h3><p>Use the buttons above</p></div>
-      <div class="card"><h3>2. Put them in one folder</h3><p>Keep both files together</p></div>
-      <div class="card"><h3>3. Double-click run_aether.bat</h3><p>It starts mining automatically</p></div>
-      <div class="card"><h3>4. Earn 50 AETHER per block</h3><p>Your wallet address will be shown</p></div>
+      <div class="card">
+        <h3>Send to My Address</h3>
+        <p>Scan the QR code or send any amount to:</p>
+        <p style="font-family:monospace; background:#000; padding:12px; border-radius:8px; word-break:break-all; margin:15px 0;">
+          18796bf623dfdf29fd6e0e5bc23fe4eee4c14a5c
+        </p>
+        <div id="qrcode"></div>
+      </div>
+      <div class="card">
+        <h3>Mine It Yourself</h3>
+        <p>Download the miner and earn 50 AETHER per block you mine.</p>
+        <a href="aether_node.py" download class="btn">Download Miner</a>
+      </div>
     </div>
   </section>
 
@@ -72,133 +68,18 @@
   </footer>
 
   <script>
-    function downloadMiner() {
-      const content = `import hashlib
-import time
-import json
-import os
-
-WALLET_FILE = "aether_wallet.json"
-
-class AetherBlock:
-    def __init__(self, index, prev_hash, transactions, timestamp=None, nonce=0):
-        self.index = index
-        self.prev_hash = prev_hash
-        self.transactions = transactions
-        self.timestamp = timestamp or time.time()
-        self.nonce = nonce
-        self.hash = self.mine_block()
-
-    def mine_block(self, target_zeros=6):
-        target = "0" * target_zeros
-        nonce = 0
-        while True:
-            header = str(self.index) + self.prev_hash + self.transactions + str(self.timestamp) + str(nonce)
-            block_hash = hashlib.sha256(header.encode()).hexdigest()
-            if block_hash.startswith(target):
-                self.nonce = nonce
-                return block_hash
-            nonce += 1
-
-class AetherChain:
-    def __init__(self):
-        self.chain = []
-        self.pending_transactions = []
-        self.load_chain()
-
-    def create_genesis(self):
-        genesis_tx = "The Times 03/28/2026 Aether launches peer-to-peer electronic cash for the universe."
-        return AetherBlock(0, "0", genesis_tx)
-
-    def load_chain(self):
-        if os.path.exists("aether_chain.json"):
-            with open("aether_chain.json", "r") as f:
-                data = json.load(f)
-                self.chain = [AetherBlock(b["index"], b["prev_hash"], b["transactions"], b["timestamp"], b["nonce"]) for b in data]
-            print(f"Loaded existing chain with {len(self.chain)} blocks!")
-        else:
-            self.chain = [self.create_genesis()]
-            print("Created new genesis block!")
-
-    def save_chain(self):
-        data = [{"index": b.index, "prev_hash": b.prev_hash, "transactions": b.transactions, 
-                 "timestamp": b.timestamp, "nonce": b.nonce, "hash": b.hash} for b in self.chain]
-        with open("aether_chain.json", "w") as f:
-            json.dump(data, f)
-        print("Chain saved to aether_chain.json")
-
-    def add_block(self):
-        last_block = self.chain[-1]
-        new_block = AetherBlock(len(self.chain), last_block.hash, json.dumps(self.pending_transactions))
-        self.chain.append(new_block)
-        self.pending_transactions = []
-        self.save_chain()
-        print(f"✅ Block #{new_block.index} mined! Hash: {new_block.hash[:16]}...")
-        return new_block
-
-    def mine(self):
-        if self.pending_transactions:
-            return self.add_block()
-        print("No pending transactions to mine.")
-        return None
-
-class Wallet:
-    def __init__(self):
-        if os.path.exists(WALLET_FILE):
-            with open(WALLET_FILE, "r") as f:
-                data = json.load(f)
-                self.private_key = data["private_key"]
-                self.address = data["address"]
-            print("Loaded existing wallet!")
-        else:
-            self.private_key = hashlib.sha256(str(time.time()).encode()).hexdigest()[:64]
-            self.address = hashlib.sha256(self.private_key.encode()).hexdigest()[:40]
-            with open(WALLET_FILE, "w") as f:
-                json.dump({"private_key": self.private_key, "address": self.address}, f)
-            print("Created and saved new wallet!")
-
-        print("🪪 Your AETHER Wallet:")
-        print("Address:", self.address)
-        print("(Keep your private key safe!)")
-
-if __name__ == "__main__":
-    print("🚀 AETHER Node Starting...\n")
-    chain = AetherChain()
-    wallet = Wallet()
-    print("\nMining your next personal block...\n")
-    chain.pending_transactions.append("Reward to " + wallet.address + ": 50 AETHER")
-    chain.mine()
-    print("\n✅ Success! Your chain is saved permanently.")
-    input("\nPress ENTER to close this window...")`;
-
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'aether_node.py';
-      a.click();
-      URL.revokeObjectURL(url);
+    function generateQR() {
+      const container = document.getElementById("qrcode");
+      container.innerHTML = "";
+      new QRCode(container, {
+        text: "aether:18796bf623dfdf29fd6e0e5bc23fe4eee4c14a5c",
+        width: 260,
+        height: 260,
+        colorDark: "#000000",
+        colorLight: "#ffffff"
+      });
     }
-
-    function downloadLauncher() {
-      const content = `@echo off
-title AETHER Miner
-echo.
-echo ===============================================
-echo           AETHER MINER - EASY LAUNCH
-echo ===============================================
-echo.
-python aether_node.py
-pause`;
-
-      const blob = new Blob([content], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'run_aether.bat';
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+    window.onload = generateQR;
   </script>
 
 </body>
